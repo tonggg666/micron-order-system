@@ -1,7 +1,3 @@
-太棒了！一个好的 README 文件是项目的门面，能让其他人快速了解您的系统功能和使用方法。
-
-以下是为您量身定制的中文 README 内容，您可以直接复制粘贴到您的 GitHub 仓库的 README.md 文件中。
-
 📦 Micron Project 订货管理系统
 这是一个基于纯 HTML、CSS 和 JavaScript 构建的简易、高效的订货单生成工具，专为 Micron 项目的物料采购流程设计。它实现了物品信息持久化存储（LocalStorage），并支持一键生成符合要求的 Word 格式订货单。
 
