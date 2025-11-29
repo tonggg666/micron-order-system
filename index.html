@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📦 Micron Project 订货管理系统</title>
+    
+    <style>
+        /* ======================================================= */
+        /* === “小清新高级”淡绿色 UI 样式 (最终完美版) === */
+        /* ======================================================= */
+
+        /* 颜色定义 */
+        :root {
+            --color-base: #F7FFF7; /* 极浅淡绿背景 */
+            --color-light: #E8F5E9; /* 表格/标签浅绿背景 */
+            --color-accent: #4CAF50; /* 强调绿 (按钮、焦点) */
+            --color-dark: #2E8B57; /* 深绿 (表头、标题线) */
+            --color-text: #333333; /* 标准文字颜色 */
+            --color-red: #c0392b; 
+            --color-border: #b3cbb6; /* 统一表格边框颜色 */
+        }
+
+        /* 1. 基础与布局 - 淡绿色基调 + Arial 字体 */
+        body { 
+            font-family: 'Arial', 'Microsoft YaHei', sans-serif; /* 字体改为 Arial */
+            margin: 0;
+            padding: 20px;
+            background-color: var(--color-base); 
+            color: var(--color-text);
+            line-height: 1.6;
+        }
+
+        .container { 
+            max-width: 1000px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 30px; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); 
+            border: 1px solid #e0e0e0;
+        }
+
+        /* 2. 标题 - 居中显示 */
+        h1 { 
+            font-size: 28px;
+            color: var(--color-dark);
+            border-bottom: 3px solid var(--color-light); 
+            padding-bottom: 8px; 
+            margin-bottom: 25px; 
+            font-weight: 700;
+            text-align: center; /* 标题居中 */
+        }
+
+        h2 { 
+            font-size: 16px;
+            color: var(--color-dark);
+            border-bottom: 1px solid var(--color-light); 
+            padding-bottom: 4px; 
+            margin-top: 25px;
+            margin-bottom: 15px; 
+            font-weight: 600;
+        }
+
+        section { 
+            margin-bottom: 25px; 
+            padding: 15px; 
+            border: 1px solid var(--color-light); 
+            background-color: white; 
+            border-radius: 4px;
+        }
+        
+        /* 3. 输入框和按钮 */
+        input[type="text"], input[type="number"], input[type="date"], button, select { 
+            padding: 8px 10px; 
+            border-radius: 4px; 
+            border: 1px solid #ccc; 
+            transition: border-color 0.2s;
+            font-size: 13px;
+            font-family: 'Arial', sans-serif; /* 确保输入框也使用 Arial */
+        }
+        
+        input:focus, select:focus {
+            border-color: var(--color-accent); 
+            box-shadow: 0 0 0 1px rgba(76, 175, 80, 0.3); 
+            outline: none;
+        }
+        
+        /* 按钮使用高级绿 */
+        button { 
+            cursor: pointer; 
+            background-color: var(--color-accent); 
+            color: white; 
+            margin-right: 8px; 
+            font-weight: 500;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        button:hover {
+            background-color: #388E3C; 
+        }
+        
+        button.red { 
+            background-color: var(--color-red); 
+        }
+
+        /* 4. 表格 - 清晰边框和淡绿表头，标题粗体 */
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 15px; 
+            font-size: 13px;
+        }
+
+        th, td { 
+            border: 1px solid var(--color-border); /* 统一表格边框颜色 */
+            padding: 8px; 
+            text-align: center; 
+        }
+
+        /* 表头样式：淡绿背景 + 粗体 */
+        th { 
+            background-color: var(--color-light); 
+            color: var(--color-dark);
+            font-weight: bold; /* 表格标题粗体 */
+        }
+
+        /* 奇偶行背景色，保持极简白 */
+        #orderTableBody tr:nth-child(even), #editTableBody tr:nth-child(even) {
+            background-color: var(--color-base);
+        }
+        
+        /* 5. 联想输入样式 */
+        .autocomplete-list { 
+            border: 1px solid var(--color-light); 
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+        .autocomplete-list li:hover { 
+            background-color: var(--color-light); 
+        }
+
+        /* 6. 模态框样式 - 适配 Image 1 风格 */
+        .modal { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background-color: rgba(0,0,0,0.4); 
+            display: none; 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 2000; 
+        }
+        .modal-content { 
+            background-color: #fff; 
+            padding: 20px 30px; /* 调整内边距 */
+            border-radius: 8px; 
+            width: 90%; 
+            max-width: 900px; 
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative; 
+        }
+        .modal-content h2 {
+            font-size: 20px; /* 模态框标题稍大 */
+            color: var(--color-dark);
+            border-bottom: 2px solid var(--color-light);
+            padding-bottom: 5px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        .close-button { 
+            color: #777; /* 关闭按钮颜色 */
+            position: absolute; 
+            top: 10px;
+            right: 15px;
+            font-size: 30px; 
+            font-weight: normal; /* 更柔和的关闭按钮 */
+            cursor: pointer;
+        }
+        .close-button:hover {
+            color: #333;
+        }
+
+        /* 模态框内的表格样式调整 */
+        #editTable th, #editTable td {
+            padding: 6px; /* 减小内边距 */
+            border: 1px solid #dcdcdc; /* 更浅的边框 */
+        }
+        #editTable th {
+            background-color: #f0f8f0; /* 模态框内表格表头更浅的背景 */
+            color: var(--color-dark);
+        }
+        #editTable input {
+            padding: 4px 6px; /* 模态框内输入框内边距 */
+            font-size: 12px;
+            width: calc(100% - 12px); /* 适应宽度 */
+        }
+        .image-preview {
+            max-width: 30px; /* 模态框内图片预览大小 */
+            max-height: 30px;
+            vertical-align: middle;
+            cursor: pointer;
+        }
+
+        /* 7. 特殊按钮强调 */
+        .big-green-button {
+            background-color: var(--color-accent) !important;
+            box-shadow: 0 4px 10px rgba(76, 175, 80, 0.3) !important;
+            font-size: 16px; /* 稍大字体 */
+            padding: 12px 25px; /* 增大点击区域 */
+        }
+        
+        .big-green-button:hover {
+            background-color: #388E3C !important;
+        }
+        
+        /* 8. 订货概览信息 */
+        .header-info-table td {
+            border: 1px solid var(--color-border); 
+        }
+        .header-info-table .info-label {
+            background-color: var(--color-light); 
+            color: var(--color-dark);
+            font-weight: bold; /* 信息表格标签粗体 */
+        }
+        .header-info-table input {
+            border: 1px solid #ccc;
+            width: calc(100% - 10px); /* 适应表格单元格 */
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>📦 Micron Project 订货管理系统</h1>
+
+    <section id="header-info">
+        <h2>📝 订货概览信息</h2>
+        <table class="header-info-table">
+            <tr>
+                <td class="info-label">PROJECT:</td>
+                <td class="info-value">MICRON | FAB</td>
+                <td class="info-label">REQUESTED BY 订货人:</td>
+                <td class="info-value">SHEN FEI</td>
+            </tr>
+            <tr>
+                <td class="info-label">CONTACT NO 联系方式:</td>
+                <td class="info-value">8452 1908</td>
+                <td class="info-label">CONTACT PERSON 联系人:</td>
+                <td class="info-value">SHEN FEI (8452 1908)</td>
+            </tr>
+            <tr>
+                <td class="info-label">REQUESTED DATE 订货日期:</td>
+                <td class="info-value">
+                    <input type="date" id="requestDate" required>
+                </td>
+                <td class="info-label">DELIVERY DATE 送货日期:</td>
+                <td class="info-value">
+                    <input type="date" id="deliveryDate" required>
+                </td>
+            </tr>
+        </table>
+    </section>
+
+    <section id="master-data">
+        <h2>📥 物品录入系统</h2>
+        <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; align-items: center;">
+            <input id="newItemName" placeholder="物品名称/详情 (必填)" style="flex: 3;">
+            <input id="newItemUnit" placeholder="单位 (必填: 片, 个, 箱)" style="flex: 1;">
+            <input id="newItemSize" placeholder="大小 (SIZE)" style="flex: 1;">
+            <input id="newItemTextRemark" placeholder="REMARK 文本备注" style="flex: 2;">
+            
+            <div style="flex: 2; display: flex; align-items: center;">
+                <label for="newItemImage" style="white-space: nowrap; font-size: 14px; margin-right: 5px;">详情照片:</label>
+                <input type="file" id="newItemImage" accept="image/*" style="flex-grow: 1;">
+            </div>
+        </div>
+        
+        <div style="margin-top: 15px;">
+            <button onclick="addItemToMaster()">录入新物品到系统</button>
+            <button onclick="viewMasterItemsModal()" style="background-color: #6c757d;">查看/编辑已录入物品列表</button>
+            <button onclick="downloadMasterListAsWord()" style="background-color: #17a2b8;">下载完整物品对照表 (Word)</button> 
+        </div>
+    </section>
+
+    <section id="order-form">
+        <h2>🛒 实际订货页面</h2>
+        <table id="orderTable">
+            <thead>
+                <tr>
+                    <th style="width: 5%;">S/N 序号</th>
+                    <th style="width: 35%;">ITEMS/DESCRIPTION 物品/详情 (联想输入)</th>
+                    <th style="width: 10%;">QTY 数量</th>
+                    <th style="width: 10%;">UNIT 单位 (自动)</th>
+                    <th style="width: 10%;">SIZE 大小</th>
+                    <th style="width: 20%;">REMARK 详情照片 (自动)</th>
+                    <th style="width: 10%;">操作</th>
+                </tr>
+            </thead>
+            <tbody id="orderTableBody">
+                </tbody>
+        </table>
+
+        <button onclick="addRow()" style="margin-top: 20px;">+ 增加更多物品</button>
+    </section>
+
+    <div style="text-align: center; margin-top: 30px;">
+        <button onclick="generateWord()" class="big-green-button">
+            📄 一键生成订货单 WORD (.doc)
+        </button>
+        <p style="margin-top: 15px; color: #777; font-size: 13px;">
+            **提示:** 下载后打开 Word 若提示“受保护的视图”，请点击上方黄条的 <b>[启用编辑]</b>，图片才会显示。<br>
+           </p>
+    </div>
+</div>
+
+<div id="masterItemsModal" class="modal">
+    <div class="modal-content">
+        <span class="close-button" onclick="closeMasterItemsModal()">&times;</span>
+        <h2>📦 物品库列表</h2> <table id="editTable" style="width: 100%;">
+            <thead>
+                <tr>
+                    <th style="width: 5%;">序号</th>
+                    <th style="width: 30%;">物品名称/详情</th>
+                    <th style="width: 10%;">单位</th>
+                    <th style="width: 10%;">大小</th>
+                    <th style="width: 20%;">文本备注</th>
+                    <th style="width: 10%;">图片</th>
+                    <th style="width: 15%;">操作</th>
+                </tr>
+            </thead>
+            <tbody id="editTableBody">
+                </tbody>
+        </table>
+        <div style="text-align: right; margin-top: 20px;"> <button onclick="saveMasterItemsEdit()" style="background-color: var(--color-accent);">保存更改</button>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    // --- 模拟数据和常量 ---
+    const CONTACT_INFO = { REQUESTED_BY: 'SHEN FEI', CONTACT_NO: '8452 1908' };
+    const STORAGE_KEY = 'micron_project_items_js';
+
+    const initialItems = [
+      { name: '灰色安全网', unit: '片', size: '', textRemark: '无', base64Image: '' },
+      { name: '2M 布带(3T)', unit: '条', size: '3T', textRemark: '示意图:布带', base64Image: '' },
+      { name: '对讲机', unit: '个', size: '', textRemark: '无', base64Image: '' },
+    ];
+
+    // --- 全局状态 ---
+    let masterItems = [];
+    let orderList = [];
+    let currentBase64 = ''; 
+
+    // --- 初始化和加载 ---
+
+    function init() {
+        // 初始化订货概览信息 (JS代码还原HTML中的表格结构)
+        document.querySelector('.header-info-table').innerHTML = `
+            <tr>
+                <td class="info-label">PROJECT:</td>
+                <td class="info-value">MICRON | FAB</td>
+                <td class="info-label">REQUESTED BY 订货人:</td>
+                <td class="info-value">${CONTACT_INFO.REQUESTED_BY}</td>
+            </tr>
+            <tr>
+                <td class="info-label">CONTACT NO 联系方式:</td>
+                <td class="info-value">${CONTACT_INFO.CONTACT_NO}</td>
+                <td class="info-label">CONTACT PERSON 联系人:</td>
+                <td class="info-value">${CONTACT_INFO.REQUESTED_BY} (${CONTACT_INFO.CONTACT_NO})</td>
+            </tr>
+            <tr>
+                <td class="info-label">REQUESTED DATE 订货日期:</td>
+                <td class="info-value">
+                    <input type="date" id="requestDate" required>
+                </td>
+                <td class="info-label">DELIVERY DATE 送货日期:</td>
+                <td class="info-value">
+                    <input type="date" id="deliveryDate" required>
+                </td>
+            </tr>
+        `;
+
+
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('requestDate').value = today;
+
+        const storedItems = localStorage.getItem(STORAGE_KEY);
+        if (storedItems) {
+            masterItems = JSON.parse(storedItems);
+             // 兼容性清理
+             masterItems = masterItems.map(item => { delete item.subject; return item; });
+        } else {
+            masterItems = initialItems;
+        }
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(masterItems));
+
+        if (orderList.length === 0) {
+            addRow(); 
+        }
+        document.getElementById('newItemImage').addEventListener('change', handleImageUpload);
+    }
+
+    // --- 图片上传处理 ---
+    function handleImageUpload(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                currentBase64 = e.target.result;
+                alert('图片已加载到内存，等待录入物品。');
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+
+    // --- 2. 物品录入功能 ---
+
+    function addItemToMaster() {
+        const name = document.getElementById('newItemName').value.trim();
+        const unit = document.getElementById('newItemUnit').value.trim();
+        const size = document.getElementById('newItemSize').value.trim();
+        const textRemark = document.getElementById('newItemTextRemark').value.trim(); 
+
+        if (!name || !unit) {
+            alert('请输入物品名称和单位！');
+            return;
+        }
+
+        const newMasterItem = { 
+            name, 
+            unit, 
+            size, 
+            textRemark, 
+            base64Image: currentBase64 
+        };
+        masterItems.push(newMasterItem);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(masterItems));
+        
+        // 清空输入
+        document.getElementById('newItemName').value = '';
+        document.getElementById('newItemUnit').value = '';
+        document.getElementById('newItemSize').value = '';
+        document.getElementById('newItemTextRemark').value = '';
+        document.getElementById('newItemImage').value = '';
+        currentBase64 = '';
+
+        alert(`物品 "${name}" 录入成功！${newMasterItem.base64Image ? '(包含图片)' : '(无图片)'}`);
+    }
+
+    // --- 3. 物品查看/编辑模态框功能 (已修复) ---
+    
+    function viewMasterItemsModal() {
+        renderEditTable();
+        document.getElementById('masterItemsModal').style.display = 'flex'; // 使用 flex 居中
+    }
+
+    function closeMasterItemsModal() {
+        document.getElementById('masterItemsModal').style.display = 'none';
+    }
+
+    function renderEditTable() {
+        const tbody = document.getElementById('editTableBody');
+        tbody.innerHTML = '';
+
+        if (masterItems.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7">系统暂无已录入物品。</td></tr>';
+            return;
+        }
+
+        masterItems.forEach((item, index) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${index + 1}</td>
+                <td><input type="text" value="${item.name}" data-index="${index}" data-field="name" onchange="handleMasterEdit(this)" style="width: 95%;"></td>
+                <td><input type="text" value="${item.unit}" data-index="${index}" data-field="unit" onchange="handleMasterEdit(this)" style="width: 95%;"></td>
+                <td><input type="text" value="${item.size}" data-index="${index}" data-field="size" onchange="handleMasterEdit(this)" style="width: 95%;"></td>
+                <td><input type="text" value="${item.textRemark}" data-index="${index}" data-field="textRemark" onchange="handleMasterEdit(this)" style="width: 95%;"></td>
+                <td>${item.base64Image ? `<img src="${item.base64Image}" class="image-preview" title="点击移除图片" onclick="removeMasterImage(${index})">` : '无'}</td>
+                <td><button onclick="removeMasterItem(${index})" class="red">删除</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function handleMasterEdit(input) {
+        const index = parseInt(input.getAttribute('data-index'));
+        const field = input.getAttribute('data-field');
+        masterItems[index][field] = input.value;
+    }
+
+    function removeMasterImage(index) {
+        if (confirm(`确定要移除物品 ${masterItems[index].name} 的图片吗？`)) {
+            masterItems[index].base64Image = '';
+            renderEditTable();
+        }
+    }
+
+    function removeMasterItem(index) {
+        if (confirm(`确定要从系统中移除物品: ${masterItems[index].name} 吗？`)) {
+            masterItems.splice(index, 1);
+            renderEditTable(); 
+        }
+    }
+
+    function saveMasterItemsEdit() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(masterItems));
+        alert("已录入物品列表保存成功！");
+        closeMasterItemsModal();
+        renderOrderTable();
+    }
+
+    // --- 实际订货页面功能 ---
+
+    function renderOrderTable() {
+        const tbody = document.getElementById('orderTableBody');
+        tbody.innerHTML = ''; 
+
+        orderList.forEach((row, index) => {
+            const tr = document.createElement('tr');
+            // 确保图片预览在单元格内居中
+            const remarkContent = row.base64Image 
+                ? `<div style="text-align: center;"><img src="${row.base64Image}" class="image-preview" style="max-width: 40px; max-height: 40px; display: inline-block;" title="${row.textRemark}"></div>` 
+                : row.textRemark;
+            
+            // 调整输入框的样式以适应新的简洁表格
+            tr.innerHTML = `
+                <td>${index + 1}.</td>
+                <td class="autocomplete-container" style="text-align: left;">
+                    <input type="text" value="${row.name || ''}" placeholder="输入物品名称自动联想..." data-index="${index}" oninput="handleInput(this)" onfocus="handleInput(this)" onblur="setTimeout(() => document.getElementById('autocomplete-list-${index}').style.display='none', 200)" style="width: 95%; border: 1px solid #ccc; padding: 5px;">
+                    <ul id="autocomplete-list-${index}" class="autocomplete-list" style="display: none;"></ul>
+                </td>
+                <td><input type="number" value="${row.qty || ''}" data-index="${index}" data-field="qty" oninput="handleOrderChange(this)" style="width: 80px; text-align: center; border: 1px solid #ccc; padding: 5px;"></td> 
+                <td><input type="text" value="${row.unit || ''}" data-index="${index}" data-field="unit" onchange="handleOrderChange(this)" readonly style="background-color: #f7f7f7; border: none; text-align: center; width: 95%;"></td>
+                <td><input type="text" value="${row.size || ''}" data-index="${index}" data-field="size" oninput="handleOrderChange(this)" style="width: 80px; text-align: center; border: 1px solid #ccc; padding: 5px;"></td>
+                <td>${remarkContent}</td>
+                <td><button onclick="removeRow(${index})" class="red" ${orderList.length === 1 ? 'disabled' : ''} style="padding: 5px 10px;">删除</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function addRow() {
+        orderList.push({ id: Date.now(), name: '', qty: '', unit: '', size: '', textRemark: '', base64Image: '' }); 
+        renderOrderTable();
+    }
+
+    function removeRow(index) {
+        if (orderList.length > 1 && confirm(`确定删除第 ${index + 1} 行物品: ${orderList[index].name || '空行'} 吗？`)) {
+            orderList.splice(index, 1);
+            renderOrderTable();
+        } else if (orderList.length === 1) {
+            alert('订货单必须保留至少一行项目。');
+        }
+    }
+
+    function handleOrderChange(input) {
+        const index = parseInt(input.getAttribute('data-index'));
+        const field = input.getAttribute('data-field');
+        orderList[index][field] = input.value;
+    }
+
+    function handleInput(input) {
+        const val = input.value;
+        const index = input.getAttribute('data-index');
+        const listContainer = document.getElementById(`autocomplete-list-${index}`);
+        listContainer.innerHTML = '';
+
+        orderList[index].name = val; 
+
+        if (!val) {
+            listContainer.style.display = 'none';
+            return;
+        }
+
+        const filteredItems = masterItems.filter(item => 
+            item.name.toLowerCase().includes(val.toLowerCase())
+        );
+
+        if (filteredItems.length > 0) {
+            listContainer.style.display = 'block';
+            filteredItems.forEach(item => {
+                const li = document.createElement('li');
+                li.textContent = item.name;
+                li.onclick = () => selectItem(index, item);
+                listContainer.appendChild(li);
+            });
+        } else {
+            listContainer.style.display = 'none';
+        }
+    }
+
+    function selectItem(index, item) {
+        orderList[index].name = item.name;
+        orderList[index].unit = item.unit;
+        orderList[index].size = item.size;
+        orderList[index].textRemark = item.textRemark;
+        orderList[index].base64Image = item.base64Image;
+        
+        renderOrderTable();
+    }
+    
+    // --- 功能：下载完整物品对照表 (Word) ---
+    function downloadMasterListAsWord() {
+        if (masterItems.length === 0) {
+            alert("物品系统为空，无法下载。");
+            return;
+        }
+
+        // Word 报表使用新的淡绿色表头
+        const wordHeaderBg = '#DCF2DE'; 
+
+        let tableRowsHtml = masterItems.map((row, index) => {
+             const rowColor = index % 2 === 0 ? '#F7FFF7' : 'white'; // 保持淡绿基调
+             const imageHtml = row.base64Image 
+                 ? `<div style="text-align: center;"><img src="${row.base64Image}" alt="Image" width="150" style="width: 150px; height: auto;"></div>`
+                 : '无图片';
+
+             return `
+                 <tr style="background-color: ${rowColor};">
+                     <td style="border: 1px solid #444;">${index + 1}</td>
+                     <td style="font-weight: bold; text-align: left; border: 1px solid #444;">${row.name}</td>
+                     <td style="border: 1px solid #444;">${row.unit}</td>
+                     <td style="border: 1px solid #444;">${row.size}</td>
+                     <td style="text-align: left; border: 1px solid #444;">${row.textRemark}</td>
+                     <td style="border: 1px solid #444;">${imageHtml}</td>
+                 </tr>
+             `;
+        }).join('');
+
+        const content = `
+            <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+            <head><meta charset='utf-8'><title>MASTER LIST</title>
+            <style>
+                body { font-family: 'Arial', sans-serif; }
+                table { border-collapse: collapse; width: 100%; font-size: 10pt; }
+                th, td { border: 1px solid #444; padding: 5px; text-align: center; vertical-align: middle; }
+                th { background-color: ${wordHeaderBg}; font-weight: bold; color: #333; }
+            </style>
+            </head>
+            <body>
+                <h2 style="text-align: center;">物品对照表 / MASTER ITEM LIST</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 5%;">序号</th>
+                            <th style="width: 25%;">物品名称</th>
+                            <th style="width: 10%;">单位</th>
+                            <th style="width: 10%;">大小</th>
+                            <th style="width: 20%;">备注</th>
+                            <th style="width: 30%;">图片</th>
+                        </tr>
+                    </thead>
+                    <tbody>${tableRowsHtml}</tbody>
+                </table>
+            </body></html>
+        `;
+
+        const blob = new Blob(['\ufeff', content], { type: 'application/msword;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `MICRON-MASTER-LIST-${new Date().toISOString().split('T')[0]}.doc`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    // --- 4. 生成订货单 WORD (.doc) - 最终优化版 (已更新为横向大图) ---
+
+    function generateWord() {
+        const requestDate = document.getElementById('requestDate').value;
+        const deliveryDate = document.getElementById('deliveryDate').value; 
+
+        if (!requestDate || !deliveryDate) {
+            alert('请填写订货日期和送货日期！');
+            return;
+        }
+
+        const finalOrderList = orderList.filter(row => row.name && row.qty && row.qty.toString().trim() !== "");
+        
+        if (finalOrderList.length === 0) {
+            alert("错误：未找到有效的订货项目！请确保至少为一行填写了“物品名称/详情”和“QTY 数量”。");
+            return;
+        }
+
+        // Word 样式变量 (与淡绿色基调匹配)
+        const wordHeaderBg = '#DCF2DE'; 
+        const highlightStyle = 'color: #2E8B57; font-weight: bold;'; // 深绿色高亮
+
+        let tableRowsHtml = finalOrderList.map((row, index) => {
+            const rowColor = index % 2 === 0 ? '#F7FFF7' : 'white'; 
+            
+            // **修改 1 & 2: 固定图片尺寸 (180px) 和调整行高**
+            const imageHtml = row.base64Image 
+                ? `<div style="text-align: center; margin: 2px auto;"><img src="${row.base64Image}" alt="Image" width="180" height="150" style="width: 180px; height: 150px; display: block; margin: 0 auto; border: 1px solid #ccc; object-fit: contain;"></div>`
+                : '';
+            
+            // **修改 3: 设置固定行高 (保证一页三行)**
+            const minRowHeight = '180px'; 
+
+            return `
+                <tr style="background-color: ${rowColor}; height: ${minRowHeight};">
+                    <td style="width: 5%; padding: 3px; height: ${minRowHeight}; text-align: center; border: 1px solid #444;">${index + 1}.</td>
+                    <td style="width: 25%; text-align: left; padding: 5px; font-weight: bold; font-size: 12pt; border: 1px solid #444;">${row.name}</td>
+                    <td style="width: 10%; padding: 3px; text-align: center; border: 1px solid #444;">${row.qty}</td>
+                    <td style="width: 10%; padding: 3px; text-align: center; border: 1px solid #444;">${row.unit}</td>
+                    <td style="width: 10%; padding: 3px; text-align: center; border: 1px solid #444;">${row.size}</td>
+                    <td style="width: 40%; text-align: center; padding: 3px; line-height: 1.1; border: 1px solid #444;">
+                        ${row.textRemark ? `<span style="display: block; margin: 2px 0; font-size: 10pt;">${row.textRemark}</span>` : ''}
+                        ${imageHtml}
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        const content = `
+            <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+            <head>
+                <meta charset='utf-8'>
+                <title>MICRON PROJECT ORDER</title>
+                <style>
+                    body { font-family: 'Arial', sans-serif; }
+                    /* **修改 4: 设置 A4 横向 (Landscape) ** */
+                    @page { size: 29.7cm 21.0cm; mso-page-orientation: landscape; margin: 1cm 1cm 1cm 1cm; } /* 减小页边距 */
+                    @page WordSection1 { size: 29.7cm 21.0cm; mso-page-orientation: landscape; margin: 1cm 1cm 1cm 1cm; }
+                    div.WordSection1 { page: WordSection1; }
+                    
+                    .header-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 11pt; border: 1px solid #444; }
+                    .header-table td { padding: 8px; border: 1px solid #ccc; background-color: #f7f7f7; }
+
+                    .order-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 10pt; table-layout: fixed; }
+                    .order-table th, .order-table td { border: 1px solid #444; padding: 3px; vertical-align: middle; } 
+                    .order-table th { background-color: ${wordHeaderBg}; color: #333333; font-weight: bold; padding: 8px 3px; text-align: center; }
+                </style>
+            </head>
+            <body>
+            <div class="WordSection1">
+                <p style="text-align: center; margin-bottom: 5px; font-size: 14pt;">MICRON | FAB</p>
+                <h2 style="text-align: center; margin-top: 0; margin-bottom: 20px;">MICRON PROJECT 订货单</h2>
+                
+                <table class="header-table">
+                    <tr>
+                        <td style="width: 50%;">REQUESTED BY 订货人: <span style="${highlightStyle}">${CONTACT_INFO.REQUESTED_BY}</span></td>
+                        <td style="width: 50%;">CONTACT NO 联系方式: <span style="${highlightStyle}">${CONTACT_INFO.CONTACT_NO}</span></td>
+                    </tr>
+                    <tr>
+                        <td>REQUESTED DATE 订货日期: <span style="${highlightStyle}">${requestDate}</span></td>
+                        <td>DELIVERY DATE 送货日期: <span style="${highlightStyle}">${deliveryDate}</span></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">CONTACT PERSON 联系人: <span style="${highlightStyle}">${CONTACT_INFO.REQUESTED_BY} ${CONTACT_INFO.CONTACT_NO}</span></td>
+                    </tr>
+                </table>
+
+                <h3 style="margin-top: 20px; margin-bottom: 10px;">🛒 订货物品列表 (请在 Word 中查看图片)</h3>
+                <table class="order-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 5%;">S/N 序号</th>
+                            <th style="width: 25%;">ITEMS/DESCRIPTION 物品/详情</th>
+                            <th style="width: 10%;">QTY 数量</th>
+                            <th style="width: 10%;">UNIT 单位</th>
+                            <th style="width: 10%;">SIZE 大小</th>
+                            <th style="width: 40%;">REMARK 详情照片</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${tableRowsHtml}
+                    </tbody>
+                </table>
+            </div>
+            </body>
+            </html>
+        `;
+
+        const blob = new Blob(['\ufeff', content], { type: 'application/msword;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `MICRON-ORDER-${requestDate}-L.doc`; // 加上 L 标识横向
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    window.onload = init;
+</script>
+</body>
+</html>
